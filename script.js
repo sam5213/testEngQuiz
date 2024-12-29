@@ -137,10 +137,33 @@ function renderQuizQuestions() {
     });
 }
 
+// function handleQuizComplete() {
+//     // Instead of sending data to the server, we'll just log it and move to the complete stage
+//     console.log('Quiz completed:', { telegram: telegramUsername, answers: answers });
+//     setStage('complete');
+// }
+
 function handleQuizComplete() {
-    // Instead of sending data to the server, we'll just log it and move to the complete stage
-    console.log('Quiz completed:', { telegram: telegramUsername, answers: answers });
-    setStage('complete');
+    fetch('https://13a2-2a03-d000-84a9-439e-a983-dc7a-64a3-e4bd.ngrok-free.app/api/quiz-complete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            telegram: telegramUsername,
+            answers,
+        }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to send quiz answers');
+        }
+        setStage('complete');
+    })
+    .catch(error => {
+        console.error('Error sending quiz answers:', error);
+        alert('Произошла ошибка при отправке ответов. Пожалуйста, попробуйте еще раз.');
+    });
 }
 
 function renderQuizComplete() {
@@ -207,9 +230,30 @@ function handleBookingSubmit(e) {
     };
 
     // Instead of sending data to the server, we'll just log it and show a success message
-    console.log('Booking submitted:', formData);
-    alert('Урок успешно забронирован!');
-    document.querySelector('.modal').remove();
+    // console.log('Booking submitted:', formData);
+    // alert('Урок успешно забронирован!');
+    // document.querySelector('.modal').remove();
+
+    fetch('https://13a2-2a03-d000-84a9-439e-a983-dc7a-64a3-e4bd.ngrok-free.app/api/book', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Урок успешно забронирован!');
+            document.querySelector('.modal').remove();
+        } else {
+            throw new Error(data.error || 'Failed to book lesson');
+        }
+    })
+    .catch(error => {
+        console.error('Error booking lesson:', error);
+        alert('Произошла ошибка при бронировании урока. Пожалуйста, попробуйте еще раз.');
+    });
 }
 
 // Initialize the quiz
